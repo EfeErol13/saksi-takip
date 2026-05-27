@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saksı Üretim ve Reçete Yönetim Sistemi</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        .color-dot { width: 12px; height: 12px; display: inline-block; border-radius: 50%; margin-right: 6px; }
+        .bg-kirmizi { background-color: #ef4444; }
+        .bg-mavi { background-color: #3b82f6; }
+        .bg-siyah { background-color: #1f2937; }
+        .bg-sari { background-color: #eab308; }
+        .bg-krem { background-color: #f5f5dc; border: 1px solid #d1d5db; }
+        .bg-turuncu { background-color: #f97316; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen font-sans">
+
+    <nav class="bg-slate-900 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-wide">🏺 PotMaster <span class="text-sm font-normal text-slate-400">v1.0</span></h1>
+            <span class="text-sm bg-slate-800 px-3 py-1 rounded-full border border-slate-700">Üretim & Reçete Takibi</span>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-4 md:p-6 space-y-6">
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="bg-white p-5 rounded-xl shadow-xs border border-gray-200 lg:col-span-2">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-700">
+                    📝 1 Adet Saksı İçin Reçete Tanımlama
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-200 bg-gray-50 text-sm text-gray-600">
+                                <th class="p-3">Renk</th>
+                                <th class="p-3">Harç (gr)</th>
+                                <th class="p-3">Toz Pigment (gr)</th>
+                                <th class="p-3">Su (ml)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recipeTableBody">
+                            </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button onclick="saveRecipes()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-5 py-2 rounded-lg transition text-sm shadow-xs">
+                        Reçeteleri Kaydet
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-xs border border-gray-200">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-700">
+                    🧮 Otomatik Döküm Hesaplayıcı
+                </h2>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Hedef Renk</label>
+                        <select id="calcColor" class="w-full border border-gray-300 rounded-lg p-2 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="kirmizi">Kırmızı</option>
+                            <option value="mavi">Mavi</option>
+                            <option value="siyah">Siyah</option>
+                            <option value="sari">Sarı</option>
+                            <option value="krem">Krem</option>
+                            <option value="turuncu">Turuncu</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Saksı Adedi (Örn: 378)</label>
+                        <input type="number" id="calcQty" value="378" min="1" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <button onclick="calculateMaterials()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition text-sm shadow-xs">
+                        Hesapla
+                    </button>
+                </div>
+
+                <div id="calcResult" class="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg hidden">
+                    <h3 class="text-sm font-bold text-slate-700 mb-2 border-b border-slate-200 pb-1">📋 Toplam İhtiyaç Listesi</h3>
+                    <div class="text-sm space-y-1 text-gray-600">
+                        <p>🧱 <strong>Harç:</strong> <span id="resHarc" class="font-mono text-blue-600 font-bold">0</span> gr</p>
+                        <p>🎨 <strong>Pigment:</strong> <span id="resPigment" class="font-mono text-amber-600 font-bold">0</span> gr</p>
+                        <p>💧 <strong>Su:</strong> <span id="resSu" class="font-mono text-cyan-600 font-bold">0</span> ml</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl shadow-xs border border-gray-200">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
+                <h2 class="text-lg font-bold flex items-center gap-2 text-slate-700">
+                    📅 52 Haftalık Planlama & Üretim Takibi
+                </h2>
+                <div class="text-xs text-gray-500 max-w-md bg-amber-50 p-2 rounded-lg border border-amber-200">
+                    💡 <strong>Kalan Hesaplaması:</strong> Sipariş Adedi - Toplam Üretilen formülüyle anlık hesaplanır. Eksik varsa kırmızı, tamamlandıysa yeşil görünür.
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto max-h-[500px] border border-gray-200 rounded-lg">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead class="bg-slate-100 sticky top-0 shadow-xs z-10">
+                        <tr class="border-b border-gray-300 text-gray-700">
+                            <th class="p-3 font-bold border-r border-gray-200 w-24 bg-slate-200">Hafta</th>
+                            <th class="p-3 font-bold border-r border-gray-200 w-32">Veri Türü</th>
+                            <th class="p-3"><span class="color-dot bg-kirmizi"></span>Kırmızı</th>
+                            <th class="p-3"><span class="color-dot bg-mavi"></span>Mavi</th>
+                            <th class="p-3"><span class="color-dot bg-siyah"></span>Siyah</th>
+                            <th class="p-3"><span class="color-dot bg-sari"></span>Sarı</th>
+                            <th class="p-3"><span class="color-dot bg-krem"></span>Krem</th>
+                            <th class="p-3"><span class="color-dot bg-turuncu"></span>Turuncu</th>
+                        </tr>
+                    </thead>
+                    <tbody id="weeklyTableBody">
+                        </tbody>
+                </table>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button onclick="saveWeeklyData()" class="bg-slate-800 hover:bg-slate-900 text-white font-medium px-6 py-2.5 rounded-lg transition text-sm shadow-md">
+                    Tüm Haftalık Verileri ve Üretimleri Kaydet
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Renk listesi ve varsayılan temiz reçeteler
+        const colors = ['kirmizi', 'mavi', 'siyah', 'sari', 'krem', 'turuncu'];
+        const colorLabels = {
+            kirmizi: 'Kırmızı', mavi: 'Mavi', siyah: 'Siyah',
+            sari: 'Sarı', krem: 'Krem', turuncu: 'Turuncu'
+        };
+
+        let recipes = {
+            kirmizi: { harch: 0.8, pigment: 0.03, su: 17 },
+            mavi: { harch: 0.8, pigment: 0.03, su: 17 },
+            siyah: { harch: 0.8, pigment: 0.03, su: 17 },
+            sari: { harch: 0.8, pigment: 0.03, su: 17 },
+            krem: { harch: 0.8, pigment: 0.03, su: 17 },
+            turuncu: { harch: 0.8, pigment: 0.03, su: 17 }
+        };
+
+        // 52 Haftalık veri yapısı
+        // Her hafta için: siparis ve uretim tutulur
+        let weeklyData = {};
+        for(let w=1; w<=52; w++) {
+            weeklyData[w] = {
+                siparis: { kirmizi: 0, mavi: 0, siyah: 0, sari: 0, krem: 0, turuncu: 0 },
+                uretim: { kirmizi: 0, mavi: 0, siyah: 0, sari: 0, krem: 0, turuncu: 0 }
+            };
+        }
+
+        // Sayfa yüklendiğinde LocalStorage'dan verileri çek
+        window.onload = function() {
+            if(localStorage.getItem('pot_recipes')) {
+                recipes = JSON.parse(localStorage.getItem('pot_recipes'));
+            }
+            if(localStorage.getItem('pot_weeklyData')) {
+                weeklyData = JSON.parse(localStorage.getItem('pot_weeklyData'));
+            }
+            
+            renderRecipes();
+            renderWeeklyTable();
+        };
+
+        // Reçete Tablosunu Çiz
+        function renderRecipes() {
+            const tbody = document.getElementById('recipeTableBody');
+            tbody.innerHTML = '';
+            colors.forEach(color => {
+                tbody.innerHTML += `
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="p-3 font-semibold capitalize flex items-center text-sm text-gray-700">
+                            <span class="color-dot bg-${color}"></span> ${colorLabels[color]}
+                        </td>
+                        <td class="p-2">
+                            <input type="number" step="0.001" id="rec_harch_${color}" value="${recipes[color].harch}" class="w-24 border border-gray-300 rounded p-1 text-sm text-center focus:border-blue-500 outline-none">
+                        </td>
+                        <td class="p-2">
+                            <input type="number" step="0.001" id="rec_pigment_${color}" value="${recipes[color].pigment}" class="w-24 border border-gray-300 rounded p-1 text-sm text-center focus:border-blue-500 outline-none">
+                        </td>
+                        <td class="p-2">
+                            <input type="number" step="0.001" id="rec_su_${color}" value="${recipes[color].su}" class="w-24 border border-gray-300 rounded p-1 text-sm text-center focus:border-blue-500 outline-none">
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Reçeteleri Kaydet
+        function saveRecipes() {
+            colors.forEach(color => {
+                recipes[color].harch = parseFloat(document.getElementById(`rec_harch_${color}`).value) || 0;
+                recipes[color].pigment = parseFloat(document.getElementById(`rec_pigment_${color}`).value) || 0;
+                recipes[color].su = parseFloat(document.getElementById(`rec_su_${color}`).value) || 0;
+            });
+            localStorage.setItem('pot_recipes', JSON.stringify(recipes));
+            alert('Reçeteler başarıyla kaydedildi!');
+        }
+
+        // 52 Haftalık Büyük Tabloyu Oluşturma
+        function renderWeeklyTable() {
+            const tbody = document.getElementById('weeklyTableBody');
+            tbody.innerHTML = '';
+
+            for (let w = 1; w <= 52; w++) {
+                // Sipariş Satırı
+                let rowSiparis = `<tr class="border-t border-gray-200 bg-white">
+                    <td rowspan="3" class="p-3 font-bold border-r border-gray-300 bg-slate-50 text-center align-middle border-b-2 border-b-slate-300 text-slate-700">Hafta ${w}</td>
+                    <td class="p-2 text-xs font-semibold text-blue-600 bg-blue-50/50 border-r border-gray-200">📥 Sipariş (Müşteri)</td>`;
+                
+                // Üretim Satırı
+                let rowUretim = `<tr class="bg-white">
+                    <td class="p-2 text-xs font-semibold text-amber-600 bg-amber-50/50 border-r border-gray-200">🛠️ Günlük Üretilen</td>`;
+                
+                // Kalan Satırı
+                let rowKalan = `<tr class="border-b-2 border-b-slate-300 bg-gray-50/30">
+                    <td class="p-2 text-xs font-bold text-gray-600 bg-gray-100 border-r border-gray-200">📊 Kalan Sipariş</td>`;
+
+                colors.forEach(color => {
+                    const sipValue = weeklyData[w].siparis[color] || 0;
+                    const ureValue = weeklyData[w].uretim[color] || 0;
+                    const kalan = sipValue - ureValue;
+                    
+                    // Kalan durumuna göre renk sınıfı
+                    let kalanClass = "text-emerald-600 font-bold bg-emerald-50/30";
+                    if(kalan > 0) kalanClass = "text-rose-600 font-bold bg-rose-50/30";
+
+                    rowSiparis += `<td class="p-1"><input type="number" min="0" id="sip_${w}_${color}" value="${sipValue}" onchange="updateKalan(${w}, '${color}')" class="w-full border border-gray-200 rounded p-1 text-center text-sm focus:bg-blue-50 outline-none"></td>`;
+                    rowUretim += `<td class="p-1"><input type="number" min="0" id="ure_${w}_${color}" value="${ureValue}" onchange="updateKalan(${w}, '${color}')" class="w-full border border-gray-200 rounded p-1 text-center text-sm focus:bg-amber-50 outline-none" placeholder="Günlük ekle..."></td>`;
+                    rowKalan += `<td class="p-2 text-center text-sm ${kalanClass}" id="kalan_${w}_${color}">${kalan}</td>`;
+                });
+
+                rowSiparis += '</tr>';
+                rowUretim += '</tr>';
+                rowKalan += '</tr>';
+
+                tbody.innerHTML += rowSiparis + rowUretim + rowKalan;
+            }
+        }
+
+        // Anlık Kalan Hesaplama (Kullanıcı hücreye değer girdiğinde tetiklenir)
+        function updateKalan(w, color) {
+            const sipInput = parseInt(document.getElementById(`sip_${w}_${color}`).value) || 0;
+            const ureInput = parseInt(document.getElementById(`ure_${w}_${color}`).value) || 0;
+            
+            // Hafızadaki veriyi güncelle
+            weeklyData[w].siparis[color] = sipInput;
+            weeklyData[w].uretim[color] = ureInput;
+
+            const kalanCell = document.getElementById(`kalan_${w}_${color}`);
+            const yeniKalan = sipInput - ureInput;
+            kalanCell.innerText = yeniKalan;
+
+            // Renk değiştirme paneli
+            if(yeniKalan > 0) {
+                kalanCell.className = "p-2 text-center text-sm text-rose-600 font-bold bg-rose-50/30";
+            } else {
+                kalanCell.className = "p-2 text-center text-sm text-emerald-600 font-bold bg-emerald-50/30";
+            }
+        }
+
+        // Tüm Tabloyu LocalStorage'a Kaydetme
+        function saveWeeklyData() {
+            for(let w=1; w<=52; w++) {
+                colors.forEach(color => {
+                    weeklyData[w].siparis[color] = parseInt(document.getElementById(`sip_${w}_${color}`).value) || 0;
+                    weeklyData[w].uretim[color] = parseInt(document.getElementById(`ure_${w}_${color}`).value) || 0;
+                });
+            }
+            localStorage.setItem('pot_weeklyData', JSON.stringify(weeklyData));
+            alert('Tüm haftalık planlar ve üretim adetleri başarıyla tarayıcıya kaydedildi!');
+        }
+
+        // Reçete Hesaplayıcı Fonksiyonu
+        function calculateMaterials() {
+            const selectedColor = document.getElementById('calcColor').value;
+            const qty = parseInt(document.getElementById('calcQty').value) || 0;
+            
+            if(qty <= 0) {
+                alert('Lütfen geçerli bir saksı adedi girin.');
+                return;
+            }
+
+            const recipe = recipes[selectedColor];
+            
+            // Hesaplamalar
+            const totalHarch = (recipe.harch * qty).toFixed(2);
+            const totalPigment = (recipe.pigment * qty).toFixed(3);
+            const totalSu = (recipe.su * qty).toFixed(1);
+
+            // Sonuçları basma
+            document.getElementById('resHarc').innerText = totalHarch;
+            document.getElementById('resPigment').innerText = totalPigment;
+            document.getElementById('resSu').innerText = totalSu;
+
+            // Paneli görünür yapma
+            document.getElementById('calcResult').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
