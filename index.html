@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saksı Üretim ve Reçete Yönetim Sistemi</title>
+    <title>Saksı Üretim, Reçete, Zaman ve Gelişmiş Maliyet Yönetim Sistemi</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         .color-dot { width: 12px; height: 12px; display: inline-block; border-radius: 50%; margin-right: 6px; }
@@ -19,8 +19,8 @@
 
     <nav class="bg-slate-900 text-white p-4 shadow-md">
         <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold tracking-wide">🏺 PotMaster <span class="text-sm font-normal text-slate-400">v1.0</span></h1>
-            <span class="text-sm bg-slate-800 px-3 py-1 rounded-full border border-slate-700">Üretim & Reçete Takibi</span>
+            <h1 class="text-xl font-bold tracking-wide">🏺 PotMaster <span class="text-sm font-normal text-slate-400">v1.2 Pro</span></h1>
+            <span class="text-sm bg-emerald-800 px-3 py-1 rounded-full border border-emerald-700 font-medium">Üretim, Zaman & Finans Yönetimi</span>
         </div>
     </nav>
 
@@ -74,7 +74,7 @@
                         <input type="number" id="calcQty" value="378" min="1" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <button onclick="calculateMaterials()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition text-sm shadow-xs">
-                        Hesapla
+                        Malzeme Hesapla
                     </button>
                 </div>
 
@@ -90,216 +90,174 @@
         </div>
 
         <div class="bg-white p-5 rounded-xl shadow-xs border border-gray-200">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
-                <h2 class="text-lg font-bold flex items-center gap-2 text-slate-700">
-                    📅 52 Haftalık Planlama & Üretim Takibi
-                </h2>
-                <div class="text-xs text-gray-500 max-w-md bg-amber-50 p-2 rounded-lg border border-amber-200">
-                    💡 <strong>Kalan Hesaplaması:</strong> Sipariş Adedi - Toplam Üretilen formülüyle anlık hesaplanır. Eksik varsa kırmızı, tamamlandıysa yeşil görünür.
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-700">
+                ⏱️ Zaman Yönetimi ve Üretim Süresi Simülatörü
+            </h2>
+            <p class="text-xs text-gray-500 mb-4 bg-blue-50 p-2 rounded-lg border border-blue-200">
+                💡 Süreler standart <strong>250 adet saksı</strong> baz alınarak 1 kişinin çalışma performansına göre girilir. Sistem bu verileri doğrusal olarak ölçeklendirir.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Harç Hazırlama (dk)</label>
+                    <input type="number" id="timeHarcHazir" value="20" min="0" class="w-full border border-gray-300 rounded-lg p-2 text-sm text-center">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Harcı Karıştırma (dk)</label>
+                    <input type="number" id="timeHarcKaris" value="15" min="0" class="w-full border border-gray-300 rounded-lg p-2 text-sm text-center">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Kalıba Dökme (dk)</label>
+                    <input type="number" id="timeKalipDok" value="45" min="0" class="w-full border border-gray-300 rounded-lg p-2 text-sm text-center">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Harcın Kuruması (dk)</label>
+                    <input type="number" id="timeKuruma" value="120" min="0" class="w-full border border-gray-300 rounded-lg p-2 text-sm text-center">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Kalıptan Çıkarma & İstif (dk)</label>
+                    <input type="number" id="timeKalipCikar" value="30" min="0" class="w-full border border-gray-300 rounded-lg p-2 text-sm text-center">
                 </div>
             </div>
-            
-            <div class="overflow-x-auto max-h-[500px] border border-gray-200 rounded-lg">
-                <table class="w-full text-left border-collapse text-sm">
-                    <thead class="bg-slate-100 sticky top-0 shadow-xs z-10">
-                        <tr class="border-b border-gray-300 text-gray-700">
-                            <th class="p-3 font-bold border-r border-gray-200 w-24 bg-slate-200">Hafta</th>
-                            <th class="p-3 font-bold border-r border-gray-200 w-32">Veri Türü</th>
-                            <th class="p-3"><span class="color-dot bg-kirmizi"></span>Kırmızı</th>
-                            <th class="p-3"><span class="color-dot bg-mavi"></span>Mavi</th>
-                            <th class="p-3"><span class="color-dot bg-siyah"></span>Siyah</th>
-                            <th class="p-3"><span class="color-dot bg-sari"></span>Sarı</th>
-                            <th class="p-3"><span class="color-dot bg-krem"></span>Krem</th>
-                            <th class="p-3"><span class="color-dot bg-turuncu"></span>Turuncu</th>
-                        </tr>
-                    </thead>
-                    <tbody id="weeklyTableBody">
-                        </tbody>
-                </table>
+
+            <div class="mt-5 pt-4 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <label class="text-sm font-bold text-gray-700 whitespace-nowrap">⏳ Hedef Toplu Sipariş Adedi:</label>
+                    <input type="number" id="timeTargetQty" value="45000" class="w-32 border border-gray-300 rounded-lg p-2 text-sm font-bold text-indigo-600 text-center">
+                </div>
+                <div class="flex gap-2 w-full md:w-auto justify-end">
+                    <button onclick="saveTimeSettings()" class="bg-gray-600 hover:bg-gray-700 text-white font-medium px-4 py-2 rounded-lg transition text-sm">Süreleri Kaydet</button>
+                    <button onclick="calculateTotalProductionTime()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2 rounded-lg transition text-sm shadow-md">⏱️ Toplam Süreyi Hesapla</button>
+                </div>
             </div>
-            <div class="mt-4 flex justify-end">
-                <button onclick="saveWeeklyData()" class="bg-slate-800 hover:bg-slate-900 text-white font-medium px-6 py-2.5 rounded-lg transition text-sm shadow-md">
-                    Tüm Haftalık Verileri ve Üretimleri Kaydet
-                </button>
+
+            <div id="timeResultCard" class="mt-5 p-5 bg-indigo-900 text-white rounded-xl hidden">
+                <p class="text-xs text-indigo-200"><span id="txtReportQty" class="font-bold text-white">45.000</span> adet saksı için net zaman projeksiyonu:</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 pt-2 border-t border-indigo-800 text-center">
+                    <div class="bg-indigo-950/40 p-2 rounded"><p class="text-xs text-indigo-300">Toplam Dakika</p><p id="resTotalMinutes" class="text-lg font-bold">0 dk</p></div>
+                    <div class="bg-indigo-950/40 p-2 rounded"><p class="text-xs text-indigo-300">İhtiyaç Duyulan Süre</p><p id="resFormattedTime" class="text-lg font-bold text-amber-400">0 Saat 0 Dk</p></div>
+                </div>
             </div>
         </div>
 
-    </div>
 
-    <script>
-        // Renk listesi ve varsayılan temiz reçeteler
-        const colors = ['kirmizi', 'mavi', 'siyah', 'sari', 'krem', 'turuncu'];
-        const colorLabels = {
-            kirmizi: 'Kırmızı', mavi: 'Mavi', siyah: 'Siyah',
-            sari: 'Sarı', krem: 'Krem', turuncu: 'Turuncu'
-        };
-
-        let recipes = {
-            kirmizi: { harch: 0.8, pigment: 0.03, su: 17 },
-            mavi: { harch: 0.8, pigment: 0.03, su: 17 },
-            siyah: { harch: 0.8, pigment: 0.03, su: 17 },
-            sari: { harch: 0.8, pigment: 0.03, su: 17 },
-            krem: { harch: 0.8, pigment: 0.03, su: 17 },
-            turuncu: { harch: 0.8, pigment: 0.03, su: 17 }
-        };
-
-        // 52 Haftalık veri yapısı
-        // Her hafta için: siparis ve uretim tutulur
-        let weeklyData = {};
-        for(let w=1; w<=52; w++) {
-            weeklyData[w] = {
-                siparis: { kirmizi: 0, mavi: 0, siyah: 0, sari: 0, krem: 0, turuncu: 0 },
-                uretim: { kirmizi: 0, mavi: 0, siyah: 0, sari: 0, krem: 0, turuncu: 0 }
-            };
-        }
-
-        // Sayfa yüklendiğinde LocalStorage'dan verileri çek
-        window.onload = function() {
-            if(localStorage.getItem('pot_recipes')) {
-                recipes = JSON.parse(localStorage.getItem('pot_recipes'));
-            }
-            if(localStorage.getItem('pot_weeklyData')) {
-                weeklyData = JSON.parse(localStorage.getItem('pot_weeklyData'));
-            }
+        <div class="bg-white p-5 rounded-xl shadow-xs border border-gray-200">
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-700">
+                💰 3 Aşamalı Profesyonel Maliyet ve Karlılık Analizi
+            </h2>
             
-            renderRecipes();
-            renderWeeklyTable();
-        };
-
-        // Reçete Tablosunu Çiz
-        function renderRecipes() {
-            const tbody = document.getElementById('recipeTableBody');
-            tbody.innerHTML = '';
-            colors.forEach(color => {
-                tbody.innerHTML += `
-                    <tr class="border-b border-gray-100 hover:bg-gray-50">
-                        <td class="p-3 font-semibold capitalize flex items-center text-sm text-gray-700">
-                            <span class="color-dot bg-${color}"></span> ${colorLabels[color]}
-                        </td>
-                        <td class="p-2">
-                            <input type="number" step="0.001" id="rec_harch_${color}" value="${recipes[color].harch}" class="w-24 border border-gray-300 rounded p-1 text-sm text-center focus:border-blue-500 outline-none">
-                        </td>
-                        <td class="p-2">
-                            <input type="number" step="0.001" id="rec_pigment_${color}" value="${recipes[color].pigment}" class="w-24 border border-gray-300 rounded p-1 text-sm text-center focus:border-blue-500 outline-none">
-                        </td>
-                        <td class="p-2">
-                            <input type="number" step="0.001" id="rec_su_${color}" value="${recipes[color].su}" class="w-24 border border-gray-300 rounded p-1 text-sm text-center focus:border-blue-500 outline-none">
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        // Reçeteleri Kaydet
-        function saveRecipes() {
-            colors.forEach(color => {
-                recipes[color].harch = parseFloat(document.getElementById(`rec_harch_${color}`).value) || 0;
-                recipes[color].pigment = parseFloat(document.getElementById(`rec_pigment_${color}`).value) || 0;
-                recipes[color].su = parseFloat(document.getElementById(`rec_su_${color}`).value) || 0;
-            });
-            localStorage.setItem('pot_recipes', JSON.stringify(recipes));
-            alert('Reçeteler başarıyla kaydedildi!');
-        }
-
-        // 52 Haftalık Büyük Tabloyu Oluşturma
-        function renderWeeklyTable() {
-            const tbody = document.getElementById('weeklyTableBody');
-            tbody.innerHTML = '';
-
-            for (let w = 1; w <= 52; w++) {
-                // Sipariş Satırı
-                let rowSiparis = `<tr class="border-t border-gray-200 bg-white">
-                    <td rowspan="3" class="p-3 font-bold border-r border-gray-300 bg-slate-50 text-center align-middle border-b-2 border-b-slate-300 text-slate-700">Hafta ${w}</td>
-                    <td class="p-2 text-xs font-semibold text-blue-600 bg-blue-50/50 border-r border-gray-200">📥 Sipariş (Müşteri)</td>`;
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
-                // Üretim Satırı
-                let rowUretim = `<tr class="bg-white">
-                    <td class="p-2 text-xs font-semibold text-amber-600 bg-amber-50/50 border-r border-gray-200">🛠️ Günlük Üretilen</td>`;
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                    <h3 class="text-sm font-bold text-slate-700 border-b border-slate-300 pb-1 flex justify-between">
+                        <span>🏢 1. Bölüm: Demirbaş Gideri</span>
+                        <span class="text-xs font-normal text-gray-500">(Tek Seferlik)</span>
+                    </h3>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Toplam Demirbaş Yatırımı (TL)</label>
+                        <input type="number" id="costDemirbasTotal" value="15000" class="w-full border border-gray-300 rounded-lg p-2 text-sm">
+                        <span class="text-[10px] text-gray-400">Örn: Kalıplar, Tezgah, Mikser vb.</span>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Amortisman Ömrü (Ay)</label>
+                        <input type="number" id="costAmortismanAy" value="12" class="w-full border border-gray-300 rounded-lg p-2 text-sm">
+                        <span class="text-[10px] text-gray-400">Maliyetin bölüneceği ay sayısı</span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                    <h3 class="text-sm font-bold text-slate-700 border-b border-slate-300 pb-1 flex justify-between">
+                        <span>🏪 2. Bölüm: Operasyonel Gider</span>
+                        <span class="text-xs font-normal text-gray-500">(Aylık Sabit)</span>
+                    </h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Kira (TL/Ay)</label>
+                            <input type="number" id="costKira" value="5000" class="w-full border border-gray-300 rounded-lg p-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Faturalar (TL/Ay)</label>
+                            <input type="number" id="costFatura" value="1500" class="w-full border border-gray-300 rounded-lg p-2 text-sm">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Muhasebe (TL/Ay)</label>
+                            <input type="number" id="costMuhasebe" value="1000" class="w-full border border-gray-300 rounded-lg p-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Diğer/Kargo (TL/Ay)</label>
+                            <input type="number" id="costDiger" value="2500" class="w-full border border-gray-300 rounded-lg p-2 text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                    <h3 class="text-sm font-bold text-slate-700 border-b border-slate-300 pb-1 flex justify-between">
+                        <span>🧪 3. Bölüm: Hammadde Fiyatları</span>
+                        <span class="text-xs font-normal text-gray-500">(Kg Bazlı Alış)</span>
+                    </h3>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Harç Kilogram Fiyatı (TL / Kg)</label>
+                        <input type="number" id="priceHarcKg" value="45" step="0.01" class="w-full border border-gray-300 rounded-lg p-2 text-sm font-semibold text-blue-700">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Toz Pigment Kilogram Fiyatı (TL / Kg)</label>
+                        <input type="number" id="pricePigmentKg" value="350" step="0.01" class="w-full border border-gray-300 rounded-lg p-2 text-sm font-semibold text-amber-700">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-gray-100 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Aylık Tahmini Üretim Kapasitesi (Adet)</label>
+                    <input type="number" id="financeMonthlyQty" value="2000" class="w-full border border-gray-300 rounded-lg p-2 text-sm font-bold text-center">
+                    <span class="text-[10px] text-gray-400 block mt-0.5">Sabit giderleri bölmek için kullanılır.</span>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Analiz Edilecek Saksı Rengi</label>
+                    <select id="financeColor" class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white">
+                        <option value="kirmizi">Kırmızı</option><option value="mavi">Mavi</option>
+                        <option value="siyah">Siyah</option><option value="sari">Sarı</option>
+                        <option value="krem">Krem</option><option value="turuncu">Turuncu</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Planlanan Saksı Satış Fiyatı (TL / Adet)</label>
+                    <input type="number" id="financeTargetPrice" value="25" step="0.5" class="w-full border border-gray-300 rounded-lg p-2 text-sm font-bold text-emerald-700 text-center">
+                </div>
+                <div class="flex flex-col gap-2 pt-4">
+                    <button onclick="saveFinanceSettings()" class="w-full bg-slate-700 hover:bg-slate-800 text-white font-medium py-1.5 rounded-lg text-xs">Maliyetleri Hafızaya Kaydet</button>
+                    <button onclick="calculateFinancialAnalysis()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg text-xs shadow-md">📊 Finansal Analiz Yap</button>
+                </div>
+            </div>
+
+            <div id="financeResultCard" class="mt-5 p-5 bg-slate-900 text-white rounded-xl hidden space-y-4">
+                <div class="border-b border-slate-700 pb-2">
+                    <h3 class="text-base font-bold text-emerald-400">📊 1 Adet Saksı İçin Finansal Kar/Zarar Raporu</h3>
+                    <p class="text-xs text-gray-400">Hesaplamalar aylık <span id="reportMonthlyQty" class="text-white font-bold">2000</span> adet üretim senaryosuna göre dağıtılmıştır.</p>
+                </div>
                 
-                // Kalan Satırı
-                let rowKalan = `<tr class="border-b-2 border-b-slate-300 bg-gray-50/30">
-                    <td class="p-2 text-xs font-bold text-gray-600 bg-gray-100 border-r border-gray-200">📊 Kalan Sipariş</td>`;
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                        <p class="text-xs text-gray-400">1 Adet Hammadde Gideri</p>
+                        <p id="resUnitHammadde" class="text-base font-mono font-bold text-blue-400">0.00 TL</p>
+                    </div>
+                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                        <p class="text-xs text-gray-400">1 Adet Sabit/Operasyonel Payı</p>
+                        <p id="resUnitSabit" class="text-base font-mono font-bold text-amber-400">0.00 TL</p>
+                    </div>
+                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                        <p class="text-xs text-gray-400">TOPLAM BİRİM MALİYET</p>
+                        <p id="resUnitTotalCost" class="text-lg font-mono font-bold text-rose-400">0.00 TL</p>
+                    </div>
+                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                        <p class="text-xs text-gray-400">SAKSI BAŞINA NET KÂR</p>
+                        <p id="resUnitNetProfit" class="text-xl font-mono font-bold text-emerald-400">0.00 TL</p>
+                    </div>
+                </div>
 
-                colors.forEach(color => {
-                    const sipValue = weeklyData[w].siparis[color] || 0;
-                    const ureValue = weeklyData[w].uretim[color] || 0;
-                    const kalan = sipValue - ureValue;
-                    
-                    // Kalan durumuna göre renk sınıfı
-                    let kalanClass = "text-emerald-600 font-bold bg-emerald-50/30";
-                    if(kalan > 0) kalanClass = "text-rose-600 font-bold bg-rose-50/30";
-
-                    rowSiparis += `<td class="p-1"><input type="number" min="0" id="sip_${w}_${color}" value="${sipValue}" onchange="updateKalan(${w}, '${color}')" class="w-full border border-gray-200 rounded p-1 text-center text-sm focus:bg-blue-50 outline-none"></td>`;
-                    rowUretim += `<td class="p-1"><input type="number" min="0" id="ure_${w}_${color}" value="${ureValue}" onchange="updateKalan(${w}, '${color}')" class="w-full border border-gray-200 rounded p-1 text-center text-sm focus:bg-amber-50 outline-none" placeholder="Günlük ekle..."></td>`;
-                    rowKalan += `<td class="p-2 text-center text-sm ${kalanClass}" id="kalan_${w}_${color}">${kalan}</td>`;
-                });
-
-                rowSiparis += '</tr>';
-                rowUretim += '</tr>';
-                rowKalan += '</tr>';
-
-                tbody.innerHTML += rowSiparis + rowUretim + rowKalan;
-            }
-        }
-
-        // Anlık Kalan Hesaplama (Kullanıcı hücreye değer girdiğinde tetiklenir)
-        function updateKalan(w, color) {
-            const sipInput = parseInt(document.getElementById(`sip_${w}_${color}`).value) || 0;
-            const ureInput = parseInt(document.getElementById(`ure_${w}_${color}`).value) || 0;
-            
-            // Hafızadaki veriyi güncelle
-            weeklyData[w].siparis[color] = sipInput;
-            weeklyData[w].uretim[color] = ureInput;
-
-            const kalanCell = document.getElementById(`kalan_${w}_${color}`);
-            const yeniKalan = sipInput - ureInput;
-            kalanCell.innerText = yeniKalan;
-
-            // Renk değiştirme paneli
-            if(yeniKalan > 0) {
-                kalanCell.className = "p-2 text-center text-sm text-rose-600 font-bold bg-rose-50/30";
-            } else {
-                kalanCell.className = "p-2 text-center text-sm text-emerald-600 font-bold bg-emerald-50/30";
-            }
-        }
-
-        // Tüm Tabloyu LocalStorage'a Kaydetme
-        function saveWeeklyData() {
-            for(let w=1; w<=52; w++) {
-                colors.forEach(color => {
-                    weeklyData[w].siparis[color] = parseInt(document.getElementById(`sip_${w}_${color}`).value) || 0;
-                    weeklyData[w].uretim[color] = parseInt(document.getElementById(`ure_${w}_${color}`).value) || 0;
-                });
-            }
-            localStorage.setItem('pot_weeklyData', JSON.stringify(weeklyData));
-            alert('Tüm haftalık planlar ve üretim adetleri başarıyla tarayıcıya kaydedildi!');
-        }
-
-        // Reçete Hesaplayıcı Fonksiyonu
-        function calculateMaterials() {
-            const selectedColor = document.getElementById('calcColor').value;
-            const qty = parseInt(document.getElementById('calcQty').value) || 0;
-            
-            if(qty <= 0) {
-                alert('Lütfen geçerli bir saksı adedi girin.');
-                return;
-            }
-
-            const recipe = recipes[selectedColor];
-            
-            // Hesaplamalar
-            const totalHarch = (recipe.harch * qty).toFixed(2);
-            const totalPigment = (recipe.pigment * qty).toFixed(3);
-            const totalSu = (recipe.su * qty).toFixed(1);
-
-            // Sonuçları basma
-            document.getElementById('resHarc').innerText = totalHarch;
-            document.getElementById('resPigment').innerText = totalPigment;
-            document.getElementById('resSu').innerText = totalSu;
-
-            // Paneli görünür yapma
-            document.getElementById('calcResult').classList.remove('hidden');
-        }
-    </script>
-</body>
-</html>
+                <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-xs text-gray-300 space-y-1">
+                    <p class="font-bold text-emerald-300">💰 Toptan Malzeme ve Ciro Bilgisi (Seçilen Renk ve Döküm Hesaplayıcı Adetleri İle):</p>
+                    <p>• Döküm planlayıcıda belirtilen <span id="resBulkQty" class="text-white font-bold">378</span> adet saksı siparişi için toplam ciro: <span id="resBulkCiro" class="text-emerald-400 font-bold">
