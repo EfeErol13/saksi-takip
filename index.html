@@ -2,640 +2,407 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saksı İmalathane Yönetim Paneli</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pot-Tech Mobile | Üretim Takip</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+            -webkit-tap-highlight-color: transparent;
+            padding-bottom: 80px; /* Alt menü için boşluk */
+        }
+
+        .mobile-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1rem;
+        }
+
+        .nav-button.active {
+            color: #f59e0b;
+        }
+
+        .nav-button.active i {
+            transform: translateY(-5px);
+            color: #f59e0b;
+        }
+
+        input, select {
+            font-size: 16px !important; /* iOS zoom engelleme */
+            background: #1e293b !important;
+            border: 1px solid #334155 !important;
+            color: white !important;
+        }
+
+        .safe-area-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* Mobilde tabloları kart görünümüne sokar */
+        @media (max-width: 768px) {
+            .responsive-table thead { display: none; }
+            .responsive-table tr { 
+                display: block; 
+                margin-bottom: 1rem; 
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 1rem;
+                background: rgba(255,255,255,0.03);
+            }
+            .responsive-table td { 
+                display: flex; 
+                justify-content: flex-end; 
+                align-items: center;
+                padding: 0.75rem;
+                position: relative;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+            .responsive-table td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 1rem;
+                font-weight: 600;
+                font-size: 0.75rem;
+                color: #94a3b8;
+                text-transform: uppercase;
+            }
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased">
+<body class="p-4">
 
-    <div class="flex h-screen overflow-hidden">
-        <div class="w-64 bg-slate-900 text-white flex flex-col justify-between hidden md:flex">
-            <div class="p-5">
-                <div class="flex items-center space-x-3 mb-8">
-                    <i class="fa-solid font-size fa-pot-food text-amber-500 text-2xl"></i>
-                    <span class="text-xl font-bold tracking-wider">SaksıPanel v1.0</span>
+    <!-- ÜST BAR -->
+    <header class="flex justify-between items-center mb-6 pt-2">
+        <div>
+            <h1 class="text-xl font-extrabold tracking-tight">POT-TECH <span class="text-amber-500">PRO</span></h1>
+            <p id="page-indicator" class="text-xs text-slate-400 font-medium uppercase">Reçete Merkezi</p>
+        </div>
+        <div class="bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full text-[10px] font-bold border border-amber-500/20">
+            AKTİF SİSTEM
+        </div>
+    </header>
+
+    <!-- İÇERİK ALANLARI -->
+    <main id="main-content">
+        
+        <!-- SEKMELER (Sadece biri görünür) -->
+        
+        <!-- 1. REÇETELER -->
+        <div id="section-recete" class="tab-content space-y-4">
+            <div id="mobile-recete-list" class="grid grid-cols-1 gap-4"></div>
+        </div>
+
+        <!-- 2. HESAPLAMA -->
+        <div id="section-hesap" class="tab-content hidden space-y-4">
+            <div class="mobile-card p-5">
+                <h3 class="text-lg font-bold mb-4">Hızlı Hesapla</h3>
+                <div class="space-y-4">
+                    <select id="calc-color" class="w-full p-4 rounded-xl"></select>
+                    <input type="number" id="calc-qty" placeholder="Adet Giriniz" class="w-full p-4 rounded-xl">
+                    <button onclick="calculateBulk()" class="w-full bg-amber-500 text-slate-900 font-bold py-4 rounded-xl">HESAPLA</button>
                 </div>
-                <nav class="space-y-2">
-                    <button onclick="switchTab('receteler')" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg bg-amber-500 text-white font-medium transition-all"><i class="fa-solid fa-flask w-5"></i> <span>Reçete Paneli</span></button>
-                    <button onclick="switchTab('hesaplama')" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-medium transition-all"><i class="fa-solid fa-calculator w-5"></i> <span>Seri Üretim Hesapla</span></button>
-                    <button onclick="switchTab('maliyet')" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-medium transition-all"><i class="fa-solid fa-tags w-5"></i> <span>Birim Maliyet Analizi</span></button>
-                    <button onclick="switchTab('musteriler')" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-medium transition-all"><i class="fa-solid fa-users w-5"></i> <span>Müşteri Siparişleri</span></button>
-                    <button onclick="switchTab('uretim')" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-medium transition-all"><i class="fa-solid fa-calendar-check w-5"></i> <span>Günlük Üretim Takip</span></button>
-                    <button onclick="switchTab('kar')" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-medium transition-all"><i class="fa-solid fa-chart-line w-5"></i> <span>Kâr & Sipariş Maliyeti</span></button>
-                </nav>
-            </div>
-            <div class="p-5 border-t border-slate-800 text-xs text-slate-500 text-center">
-                İmalathane Yönetim Sistemi © 2026
+                <div id="calc-result" class="mt-6 grid grid-cols-2 gap-3 hidden">
+                    <div class="bg-slate-900/50 p-3 rounded-lg border border-white/5">
+                        <span class="text-[10px] text-slate-500 uppercase block">Harç</span>
+                        <span id="res-harc" class="text-lg font-bold">0</span> <span class="text-xs text-slate-400">kg</span>
+                    </div>
+                    <div class="bg-slate-900/50 p-3 rounded-lg border border-white/5">
+                        <span class="text-[10px] text-slate-500 uppercase block">Pigment</span>
+                        <span id="res-pigment" class="text-lg font-bold text-amber-500">0</span> <span class="text-xs text-slate-400">kg</span>
+                    </div>
+                    <div class="bg-slate-900/50 p-3 rounded-lg border border-white/5">
+                        <span class="text-[10px] text-slate-500 uppercase block">Akışkan.</span>
+                        <span id="res-flow" class="text-lg font-bold">0</span> <span class="text-xs text-slate-400">kg</span>
+                    </div>
+                    <div class="bg-slate-900/50 p-3 rounded-lg border border-white/5">
+                        <span class="text-[10px] text-slate-500 uppercase block">Su</span>
+                        <span id="res-water" class="text-lg font-bold text-blue-400">0</span> <span class="text-xs text-slate-400">L</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="flex-1 flex flex-col overflow-y-auto">
-            <header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center shrink-0">
-                <h1 id="page-title" class="text-2xl font-bold text-slate-900">Reçete Yönetim Paneli</h1>
-                <div class="flex items-center space-x-2 text-sm text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
-                    <i class="fa-solid fa-circle text-emerald-500 text-[10px] animate-pulse"></i>
-                    <span>Sistem Aktif (Veriler Kaydediliyor)</span>
+        <!-- 3. SİPARİŞ VE ÜRETİM -->
+        <div id="section-uretim" class="tab-content hidden space-y-6">
+            <!-- Üretim Girişi -->
+            <div class="mobile-card p-5 border-l-4 border-blue-500">
+                <h3 class="font-bold mb-3">Üretim Bildir</h3>
+                <div class="flex gap-2">
+                    <select id="prod-color" class="flex-1 p-3 rounded-lg"></select>
+                    <input type="number" id="prod-qty" placeholder="Adet" class="w-24 p-3 rounded-lg">
+                    <button onclick="registerProduction()" class="bg-blue-600 p-3 rounded-lg"><i class="fa-solid fa-plus"></i></button>
                 </div>
-            </header>
+            </div>
+            <!-- Sipariş Ekleme -->
+            <button onclick="toggleModal('order-modal')" class="w-full bg-slate-800 border border-white/10 py-4 rounded-xl font-bold">
+                <i class="fa-solid fa-user-plus mr-2"></i> YENİ SİPARİŞ EKLE
+            </button>
+            <!-- Sipariş Listesi -->
+            <div id="mobile-order-list" class="space-y-3"></div>
+        </div>
 
-            <main class="p-8 max-w-7xl w-full mx-auto space-y-8 flex-1">
-                
-                <section id="tab-receteler" class="tab-content block">
-                    <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6">
-                        <div class="mb-4">
-                            <h2 class="text-lg font-semibold text-slate-900">1 Adet Saksı İçin Renk Bazlı Reçeteler</h2>
-                            <p class="text-sm text-slate-500">Her renk için gramaj ve mililitre değerlerini güncelleyip kaydedebilirsiniz.</p>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="recete-kartlari-konteyner">
-                            </div>
-                    </div>
-                </section>
+        <!-- 4. FİNANS -->
+        <div id="section-finans" class="tab-content hidden space-y-4">
+            <div class="grid grid-cols-1 gap-3">
+                <div class="mobile-card p-5 flex justify-between items-center">
+                    <span class="text-sm text-slate-400">Toplam Ciro</span>
+                    <span id="fin-rev" class="text-xl font-bold">0 TL</span>
+                </div>
+                <div class="mobile-card p-5 flex justify-between items-center">
+                    <span class="text-sm text-slate-400">Hammadde Gideri</span>
+                    <span id="fin-cost" class="text-xl font-bold text-red-400">0 TL</span>
+                </div>
+                <div class="mobile-card p-5 bg-emerald-500/10 border-emerald-500/20 flex justify-between items-center">
+                    <span class="text-sm text-emerald-500 font-bold">Net Kar</span>
+                    <span id="fin-prof" class="text-xl font-black text-emerald-400">0 TL</span>
+                </div>
+            </div>
+            <!-- Maliyet Ayarları -->
+            <div class="mobile-card p-5 space-y-3">
+                <p class="text-xs font-bold text-slate-500 uppercase">KG Fiyat Güncelle</p>
+                <div class="grid grid-cols-3 gap-2">
+                    <input type="number" id="price-harc" placeholder="Harç" class="p-2 rounded text-xs">
+                    <input type="number" id="price-pigment" placeholder="Boya" class="p-2 rounded text-xs">
+                    <input type="number" id="price-flow" placeholder="Akış." class="p-2 rounded text-xs">
+                </div>
+                <button onclick="savePrices()" class="w-full py-2 bg-slate-700 rounded-lg text-xs font-bold uppercase">Fiyatları Kaydet</button>
+            </div>
+        </div>
+    </main>
 
-                <section id="tab-hesaplama" class="tab-content hidden">
-                    <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6">
-                        <h2 class="text-lg font-semibold text-slate-900 mb-4">Seri Üretim Malzeme Reçetesi Hesaplama</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">Üretilecek Rengi Seçin</label>
-                                <select id="hesap-renk" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-hidden focus:border-amber-500">
-                                    <option value="siyah">Siyah</option>
-                                    <option value="krem">Krem</option>
-                                    <option value="sarı">Sarı</option>
-                                    <option value="turuncu">Turuncu</option>
-                                    <option value="kırmızı">Kırmızı</option>
-                                    <option value="mavi">Mavi</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">Hedef Üretim Adedi</label>
-                                <input type="number" id="hesap-adet" value="10000" min="1" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-hidden focus:border-amber-500">
-                            </div>
-                        </div>
-                        <button onclick="seriUretimHesapla()" class="bg-amber-500 hover:bg-amber-600 text-white font-medium px-6 py-2.5 rounded-lg transition-all cursor-pointer"><i class="fa-solid fa-calculator mr-2"></i> Hesapla</button>
+    <!-- ALT MOBİL MENÜ -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-[#0a0f1d]/90 backdrop-blur-xl border-t border-white/5 px-6 py-3 flex justify-between items-center z-50 safe-area-bottom">
+        <button onclick="changeTab('recete')" class="nav-button active flex flex-col items-center space-y-1 transition-all">
+            <i class="fa-solid fa-flask-vial text-xl"></i>
+            <span class="text-[10px] font-bold">Reçete</span>
+        </button>
+        <button onclick="changeTab('hesap')" class="nav-button flex flex-col items-center space-y-1 transition-all text-slate-500">
+            <i class="fa-solid fa-calculator text-xl"></i>
+            <span class="text-[10px] font-bold">Hesap</span>
+        </button>
+        <button onclick="changeTab('uretim')" class="nav-button flex flex-col items-center space-y-1 transition-all text-slate-500">
+            <i class="fa-solid fa-industry text-xl"></i>
+            <span class="text-[10px] font-bold">Üretim</span>
+        </button>
+        <button onclick="changeTab('finans')" class="nav-button flex flex-col items-center space-y-1 transition-all text-slate-500">
+            <i class="fa-solid fa-chart-line text-xl"></i>
+            <span class="text-[10px] font-bold">Finans</span>
+        </button>
+    </nav>
 
-                        <div id="hesap-sonuc-alani" class="mt-8 hidden">
-                            <h3 class="text-md font-semibold text-slate-900 mb-3"><span id="sonuc-adet" class="text-amber-600">10.000</span> Adet <span id="sonuc-renk" class="capitalize text-amber-600">Sarı</span> Saksı İçin Toplam İhtiyaç:</h3>
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
-                                    <span class="text-xs font-semibold text-slate-500 block uppercase mb-1">Harç</span>
-                                    <span id="toplam-harc" class="text-xl font-bold text-slate-800">0</span> <span class="text-sm text-slate-500">kg</span>
-                                </div>
-                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
-                                    <span class="text-xs font-semibold text-slate-500 block uppercase mb-1">Toz Pigment</span>
-                                    <span id="toplam-pigment" class="text-xl font-bold text-slate-800">0</span> <span class="text-sm text-slate-500">kg</span>
-                                </div>
-                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
-                                    <span class="text-xs font-semibold text-slate-500 block uppercase mb-1">Akışkanlaştırıcı</span>
-                                    <span id="toplam-akiskan" class="text-xl font-bold text-slate-800">0</span> <span class="text-sm text-slate-500">kg</span>
-                                </div>
-                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
-                                    <span class="text-xs font-semibold text-slate-500 block uppercase mb-1">Su</span>
-                                    <span id="toplam-su" class="text-xl font-bold text-slate-800">0</span> <span class="text-sm text-slate-500">Litre</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="tab-maliyet" class="tab-content hidden">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6 lg:col-span-1">
-                            <h2 class="text-lg font-semibold text-slate-900 mb-4">Hammadde KG Fiyat Girişi</h2>
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">Harç KG Fiyatı (TL)</label>
-                                    <input type="number" id="fiyat-harc" step="0.01" value="15" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-hidden focus:border-amber-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">Toz Pigment KG Fiyatı (TL)</label>
-                                    <input type="number" id="fiyat-pigment" step="0.01" value="250" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-hidden focus:border-amber-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">Akışkanlaştırıcı KG Fiyatı (TL)</label>
-                                    <input type="number" id="fiyat-akiskan" step="0.01" value="120" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-hidden focus:border-amber-500">
-                                </div>
-                                <button onclick="fiyatlariKaydet()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-lg transition-all cursor-pointer"><i class="fa-solid fa-floppy-disk mr-2"></i> Fiyatları Kaydet</button>
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6 lg:col-span-2">
-                            <h2 class="text-lg font-semibold text-slate-900 mb-4">X Kadar Üretim İçin Hammadde Maliyet Simülasyonu</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">Renk Seçimi</label>
-                                    <select id="maliyet-renk" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-hidden focus:border-amber-500">
-                                        <option value="siyah">Siyah</option>
-                                        <option value="krem">Krem</option>
-                                        <option value="sarı">Sarı</option>
-                                        <option value="turuncu">Turuncu</option>
-                                        <option value="kırmızı">Kırmızı</option>
-                                        <option value="mavi">Mavi</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">Simüle Edilecek Adet</label>
-                                    <input type="number" id="maliyet-adet" value="1000" min="1" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-hidden focus:border-amber-500">
-                                </div>
-                            </div>
-                            <button onclick="maliyetHesapla()" class="bg-amber-500 hover:bg-amber-600 text-white font-medium px-6 py-2.5 rounded-lg transition-all cursor-pointer">Maliyeti Çıkar</button>
-
-                            <div id="maliyet-sonuc-alani" class="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-200 hidden">
-                                <div class="flex justify-between items-center border-b border-slate-200 pb-3 mb-3">
-                                    <span class="font-medium text-slate-700"><span id="maliyet-sonuc-adet">1000</span> Adet İçin Toplam Tutar:</span>
-                                    <span id="maliyet-toplam-tutar" class="text-2xl font-bold text-emerald-600">0.00 TL</span>
-                                </div>
-                                <p class="text-xs text-slate-400 mb-2">* Su maliyeti hesaba dahil edilmemiştir.</p>
-                                <div class="text-sm space-y-1 text-slate-600">
-                                    <div class="flex justify-between"><span>Harç Maliyeti:</span> <span id="m-harc-tl">0 TL</span></div>
-                                    <div class="flex justify-between"><span>Pigment Maliyeti:</span> <span id="m-pigment-tl">0 TL</span></div>
-                                    <div class="flex justify-between"><span>Akışkanlaştırıcı Maliyeti:</span> <span id="m-akiskan-tl">0 TL</span></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="tab-musteriler" class="tab-content hidden">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6 lg:col-span-1">
-                            <h2 class="text-lg font-semibold text-slate-900 mb-4">Yeni Sipariş Girişi</h2>
-                            <form id="siparis-formu" onsubmit="siparisEkle(event)" class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">Müşteri Adı / Firma</label>
-                                    <input type="text" id="siparis-musteri" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-hidden focus:border-amber-500">
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-700 mb-1">Saksı Rengi</label>
-                                        <select id="siparis-renk" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-hidden focus:border-amber-500">
-                                            <option value="siyah">Siyah</option>
-                                            <option value="krem">Krem</option>
-                                            <option value="sarı">Sarı</option>
-                                            <option value="turuncu">Turuncu</option>
-                                            <option value="kırmızı">Kırmızı</option>
-                                            <option value="mavi">Mavi</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-700 mb-1">Sipariş Adedi</label>
-                                        <input type="number" id="siparis-adet" min="1" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-hidden focus:border-amber-500">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">Sipariş Birim Satış Fiyatı (TL)</label>
-                                    <input type="number" id="siparis-birim-fiyat" min="0" step="0.1" required placeholder="Örn: 45" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-hidden focus:border-amber-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">Termin Süresi (Teslim Tarihi)</label>
-                                    <input type="date" id="siparis-termin" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-hidden focus:border-amber-500">
-                                </div>
-                                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-medium py-2.5 rounded-lg transition-all cursor-pointer"><i class="fa-solid fa-plus mr-2"></i> Siparişi Kaydet</button>
-                            </form>
-                        </div>
-                        <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6 lg:col-span-2 overflow-x-auto">
-                            <h2 class="text-lg font-semibold text-slate-900 mb-4">Aktif Müşteri Siparişleri ve Kalan Durum</h2>
-                            <table class="w-full text-left border-collapse text-sm">
-                                <thead>
-                                    <tr class="bg-slate-100 text-slate-600 uppercase text-xs tracking-wider">
-                                        <th class="p-3 rounded-l-lg">Müşteri</th>
-                                        <th class="p-3">Renk</th>
-                                        <th class="p-3">Toplam Sipariş</th>
-                                        <th class="p-3">Kalan Sipariş</th>
-                                        <th class="p-3">Termin</th>
-                                        <th class="p-3 rounded-r-lg text-right">İşlem</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="siparis-tablo-body" class="divide-y divide-slate-100">
-                                    </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="tab-uretim" class="tab-content hidden">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6 lg:col-span-1">
-                            <h2 class="text-lg font-semibold text-slate-900 mb-4">Günlük Üretim Girişi</h2>
-                            <p class="text-xs text-slate-400 mb-4">Buraya girilen adetler, ilgili renkteki en yakın tarihli müşteri siparişinin "Kalan Sipariş" miktarından otomatik düşer.</p>
-                            <form id="uretim-formu" onsubmit="uretimEkle(event)" class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">Üretim Tarihi</label>
-                                    <input type="date" id="uretim-tarih" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-hidden focus:border-amber-500">
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-700 mb-1">Üretilen Renk</label>
-                                        <select id="uretim-renk" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-hidden focus:border-amber-500">
-                                            <option value="siyah">Siyah</option>
-                                            <option value="krem">Krem</option>
-                                            <option value="sarı">Sarı</option>
-                                            <option value="turuncu">Turuncu</option>
-                                            <option value="kırmızı">Kırmızı</option>
-                                            <option value="mavi">Mavi</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-700 mb-1">Üretim Adedi</label>
-                                        <input type="number" id="uretim-adet" min="1" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-hidden focus:border-amber-500">
-                                    </div>
-                                </div>
-                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-all cursor-pointer"><i class="fa-solid fa-square-plus mr-2"></i> Üretimi Kayda Geç</button>
-                            </form>
-                        </div>
-                        <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6 lg:col-span-2 overflow-x-auto">
-                            <h2 class="text-lg font-semibold text-slate-900 mb-4">Üretim Geçmişi Logları</h2>
-                            <table class="w-full text-left border-collapse text-sm">
-                                <thead>
-                                    <tr class="bg-slate-100 text-slate-600 uppercase text-xs tracking-wider">
-                                        <th class="p-3 rounded-l-lg">Tarih</th>
-                                        <th class="p-3">Renk</th>
-                                        <th class="p-3 rounded-r-lg">Girişi Yapılan Net Üretim</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="uretim-tablo-body" class="divide-y divide-slate-100">
-                                    </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="tab-kar" class="tab-content hidden">
-                    <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-6">
-                        <div class="mb-4">
-                            <h2 class="text-lg font-semibold text-slate-900">Müşteri Siparişleri Hammadde Gider & Kâr Analizi</h2>
-                            <p class="text-sm text-slate-500">Mevcut girilmiş siparişlerin hammadde maliyetleri, ciro ve tahmini kâr durumları otomatik hesaplanır.</p>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-5">
-                                <span class="text-sm font-semibold text-blue-700 block mb-1">Toplam Alınan Sipariş Cirosu</span>
-                                <span id="kar-toplam-ciro" class="text-3xl font-bold text-blue-900">0.00 TL</span>
-                            </div>
-                            <div class="bg-red-50 border border-red-200 rounded-xl p-5">
-                                <span class="text-sm font-semibold text-red-700 block mb-1">Toplam Gidecek Hammadde Parası</span>
-                                <span id="kar-toplam-maliyet" class="text-3xl font-bold text-red-900">0.00 TL</span>
-                            </div>
-                            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
-                                <span class="text-sm font-semibold text-emerald-700 block mb-1">Öngörülen Net Brüt Kâr</span>
-                                <span id="kar-net-kar" class="text-3xl font-bold text-emerald-900">0.00 TL</span>
-                            </div>
-                        </div>
-
-                        <h3 class="text-md font-semibold text-slate-800 mb-3">Sipariş Bazlı Hammadde / Finans Detayları</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse text-sm">
-                                <thead>
-                                    <tr class="bg-slate-100 text-slate-600 uppercase text-xs tracking-wider">
-                                        <th class="p-3 rounded-l-lg">Müşteri</th>
-                                        <th class="p-3">Sipariş/Renk</th>
-                                        <th class="p-3">Hammadde Maliyeti</th>
-                                        <th class="p-3">Toplam Ciro</th>
-                                        <th class="p-3 rounded-r-lg">Kâr Marjı</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="kar-tablo-body" class="divide-y divide-slate-100">
-                                    </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-            </main>
+    <!-- MODAL: SİPARİŞ EKLE -->
+    <div id="order-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
+        <div class="mobile-card bg-slate-900 w-full max-w-sm p-6 space-y-4">
+            <h3 class="text-xl font-bold">Yeni Sipariş</h3>
+            <input type="text" id="order-cust" placeholder="Müşteri Adı" class="w-full p-4 rounded-xl">
+            <div class="flex gap-2">
+                <select id="order-color" class="flex-1 p-4 rounded-xl"></select>
+                <input type="number" id="order-qty" placeholder="Adet" class="w-24 p-4 rounded-xl">
+            </div>
+            <input type="number" id="order-price" placeholder="Birim Satış Fiyatı" class="w-full p-4 rounded-xl">
+            <input type="date" id="order-date" class="w-full p-4 rounded-xl">
+            <div class="flex gap-2 pt-2">
+                <button onclick="toggleModal('order-modal')" class="flex-1 py-4 text-slate-400 font-bold">İPTAL</button>
+                <button onclick="addOrder()" class="flex-1 py-4 bg-amber-500 text-slate-900 rounded-xl font-bold">KAYDET</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Varsayılan Reçete Şablonu (1 Saksı İçin)
-        const varsayilanReceteler = {
-            siyah: { harc: 86, pigment: 0.04, akiskan: 0.5, su: 18 },
-            krem: { harc: 86, pigment: 0.02, akiskan: 0.5, su: 18 },
-            sarı: { harc: 86, pigment: 0.04, akiskan: 0.5, su: 18 },
-            turuncu: { harc: 88, pigment: 0.05, akiskan: 0.5, su: 19 },
-            kırmızı: { harc: 90, pigment: 0.06, akiskan: 0.6, su: 20 },
-            mavi: { harc: 86, pigment: 0.04, akiskan: 0.5, su: 18 }
+        // SİSTEM VERİLERİ
+        const DEF_RECIPES = {
+            siyah: { harc: 86, pigment: 0.04, flow: 0.5, water: 18, color: '#1e293b' },
+            krem: { harc: 86, pigment: 0.02, flow: 0.5, water: 18, color: '#fef3c7' },
+            sarı: { harc: 86, pigment: 0.04, flow: 0.5, water: 18, color: '#fbbf24' },
+            turuncu: { harc: 88, pigment: 0.05, flow: 0.5, water: 19, color: '#f97316' },
+            kırmızı: { harc: 90, pigment: 0.06, flow: 0.6, water: 20, color: '#dc2626' },
+            mavi: { harc: 86, pigment: 0.04, flow: 0.5, water: 18, color: '#2563eb' }
         };
 
-        // Varsayılan Hammadde KG Fiyatları
-        const varsayilanFiyatlar = { harc: 15.00, pigment: 250.00, akiskan: 120.00 };
+        let recipes = JSON.parse(localStorage.getItem('m_recipes')) || DEF_RECIPES;
+        let prices = JSON.parse(localStorage.getItem('m_prices')) || { harc: 15, pigment: 300, flow: 150 };
+        let orders = JSON.parse(localStorage.getItem('m_orders')) || [];
 
-        // Hafızadan Verileri Yükle veya İlk Kurulumu Yap
-        let RECETELER = JSON.parse(localStorage.getItem('saksi_receteler')) || varsayilanReceteler;
-        let FIYATLAR = JSON.parse(localStorage.getItem('saksi_fiyatlar')) || varsayilanFiyatlar;
-        let SIPARISLER = JSON.parse(localStorage.getItem('saksi_siparisler')) || [];
-        let URETIMLER = JSON.parse(localStorage.getItem('saksi_uretimler')) || [];
-
-        // Sayfa Yüklendiğinde Çalışacak Fonksiyonlar
-        document.addEventListener("DOMContentLoaded", () => {
-            document.getElementById('uretim-tarih').valueAsDate = new Date();
-            receteKartlariniBas();
-            fiyatFormunuDoldur();
-            tablolariGuncelle();
+        // BAŞLATMA
+        document.addEventListener('DOMContentLoaded', () => {
+            initApp();
         });
 
-        // Sekme Değiştirici (Tab Switcher)
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-
-            // Başlığı Güncelle
-            const basliklar = {
-                receteler: "Reçete Yönetim Paneli",
-                hesaplama: "Seri Üretim Malzeme Reçetesi Hesaplama",
-                maliyet: "Birim Maliyet Analizi",
-                musteriler: "Müşteri Siparişleri ve Termin Takibi",
-                uretim: "Günlük Üretim Takip Paneli",
-                kar: "Finansal Kâr ve Sipariş Maliyet Analizi"
-            };
-            document.getElementById('page-title').innerText = basliklar[tabId];
-
-            // Aktif Buton Stilini Değiştir
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('bg-amber-500', 'text-white');
-                btn.classList.add('text-slate-400', 'hover:bg-slate-800', 'hover:text-white');
-            });
-            event.currentTarget.classList.add('bg-amber-500', 'text-white');
-            event.currentTarget.classList.remove('text-slate-400', 'hover:bg-slate-800');
-
-            // Tablolara yansıyan dinamik verileri tazele
-            tablolariGuncelle();
+        function initApp() {
+            renderRecipes();
+            populateSelects();
+            renderOrders();
+            renderFinances();
+            document.getElementById('price-harc').value = prices.harc;
+            document.getElementById('price-pigment').value = prices.pigment;
+            document.getElementById('price-flow').value = prices.flow;
         }
 
-        // 1. REÇETE PANELİ: Kartları Listeleme
-        function receteKartlariniBas() {
-            const konteyner = document.getElementById('recete-kartlari-konteyner');
-            konteyner.innerHTML = '';
+        // SEKMELER
+        function changeTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.getElementById('section-' + tab).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active', 'text-amber-500'));
+            event.currentTarget.classList.add('active');
 
-            const renkRenkler = {
-                siyah: 'bg-neutral-800 text-white', krem: 'bg-amber-50 text-amber-900 border-amber-200',
-                sarı: 'bg-amber-400 text-amber-950', turuncu: 'bg-orange-500 text-white',
-                kırmızı: 'bg-red-600 text-white', mavi: 'bg-blue-600 text-white'
-            };
+            const labels = { recete: 'Reçete Merkezi', hesap: 'Malzeme Hesaplama', uretim: 'Sipariş & Üretim', finans: 'Finansal Durum' };
+            document.getElementById('page-indicator').innerText = labels[tab];
+        }
 
-            Object.keys(RECETELER).forEach(renk => {
-                const r = RECETELER[renk];
-                const kart = document.createElement('div');
-                kart.className = "bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between";
-                kart.innerHTML = `
-                    <div>
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="capitalize font-bold text-lg flex items-center gap-2">
-                                <span class="w-4 h-4 rounded-full inline-block border border-slate-300 ${renkRenkler[renk]}"></span> ${renk}
-                            </span>
-                            <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-sm font-medium">1 Adet İçin</span>
+        // REÇETELERİ LİSTELE
+        function renderRecipes() {
+            const container = document.getElementById('mobile-recete-list');
+            container.innerHTML = '';
+            Object.entries(recipes).forEach(([name, r]) => {
+                container.innerHTML += `
+                    <div class="mobile-card p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full" style="background:${r.color}"></div>
+                                <span class="font-bold capitalize">${name}</span>
+                            </div>
+                            <span class="text-[10px] text-slate-500">1 ADET İÇİN</span>
                         </div>
-                        <div class="space-y-3 text-sm">
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-500">Harç (gr):</span>
-                                <input type="number" step="0.01" id="recete-${renk}-harc" value="${r.harc}" class="w-20 text-right bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="flex flex-col">
+                                <label class="text-[10px] text-slate-500 uppercase">Harç (gr)</label>
+                                <input type="number" step="0.1" value="${r.harc}" onchange="updateRecipe('${name}','harc',this.value)" class="p-2 rounded-lg text-sm">
                             </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-500">Toz Pigment (gr):</span>
-                                <input type="number" step="0.001" id="recete-${renk}-pigment" value="${r.pigment}" class="w-20 text-right bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5">
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-500">Akışkanlaştırıcı (gr):</span>
-                                <input type="number" step="0.01" id="recete-${renk}-akiskan" value="${r.akiskan}" class="w-20 text-right bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5">
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-500">Su (ml):</span>
-                                <input type="number" step="0.1" id="recete-${renk}-su" value="${r.su}" class="w-20 text-right bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5">
+                            <div class="flex flex-col">
+                                <label class="text-[10px] text-slate-500 uppercase">Boya (gr)</label>
+                                <input type="number" step="0.001" value="${r.pigment}" onchange="updateRecipe('${name}','pigment',this.value)" class="p-2 rounded-lg text-sm">
                             </div>
                         </div>
                     </div>
-                    <button onclick="receteKaydet('${renk}')" class="mt-4 w-full bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold py-2 rounded-lg transition-all cursor-pointer"><i class="fa-solid fa-check mr-1"></i> Reçeteyi Güncelle</button>
                 `;
-                konteyner.appendChild(kart);
             });
         }
 
-        // Reçete Kaydetme Tetikleyicisi
-        function receteKaydet(renk) {
-            RECETELER[renk].harc = parseFloat(document.getElementById(`recete-${renk}-harc`).value) || 0;
-            RECETELER[renk].pigment = parseFloat(document.getElementById(`recete-${renk}-pigment`).value) || 0;
-            RECETELER[renk].akiskan = parseFloat(document.getElementById(`recete-${renk}-akiskan`).value) || 0;
-            RECETELER[renk].su = parseFloat(document.getElementById(`recete-${renk}-su`).value) || 0;
-
-            localStorage.setItem('saksi_receteler', JSON.stringify(RECETELER));
-            alert(`${renk.toUpperCase()} saksı üretim reçetesi başarıyla güncellendi!`);
+        function updateRecipe(name, key, val) {
+            recipes[name][key] = parseFloat(val);
+            localStorage.setItem('m_recipes', JSON.stringify(recipes));
         }
 
-        // 2. SERİ ÜRETİM HESAPLAMA PANELİ
-        function seriUretimHesapla() {
-            const renk = document.getElementById('hesap-renk').value;
-            const adet = parseInt(document.getElementById('hesap-adet').value) || 0;
-
-            if(adet <= 0) return alert("Lütfen geçerli bir üretim adedi girin.");
-
-            const r = RECETELER[renk];
-
-            // Hesaplar (gr'dan kg'ye çevrim için /1000 yapılıyor)
-            const topHarcKg = (r.harc * adet) / 1000;
-            const topPigmentKg = (r.pigment * adet) / 1000;
-            const topAkiskanKg = (r.akiskan * adet) / 1000;
-            const topSuLitre = (r.su * adet) / 1000;
-
-            document.getElementById('sonuc-adet').innerText = adet.toLocaleString('tr-TR');
-            document.getElementById('sonuc-renk').innerText = renk;
-
-            document.getElementById('toplam-harc').innerText = topHarcKg.toFixed(2);
-            document.getElementById('toplam-pigment').innerText = topPigmentKg.toFixed(3);
-            document.getElementById('toplam-akiskan').innerText = topAkiskanKg.toFixed(2);
-            document.getElementById('toplam-su').innerText = topSuLitre.toFixed(1);
-
-            document.getElementById('hesap-sonuc-alani').classList.remove('hidden');
+        // HESAPLAMA
+        function calculateBulk() {
+            const color = document.getElementById('calc-color').value;
+            const qty = parseInt(document.getElementById('calc-qty').value);
+            if(!qty) return;
+            const r = recipes[color];
+            document.getElementById('res-harc').innerText = ((r.harc * qty) / 1000).toFixed(1);
+            document.getElementById('res-pigment').innerText = ((r.pigment * qty) / 1000).toFixed(2);
+            document.getElementById('res-flow').innerText = ((r.flow * qty) / 1000).toFixed(1);
+            document.getElementById('res-water').innerText = ((r.water * qty) / 1000).toFixed(0);
+            document.getElementById('calc-result').classList.remove('hidden');
         }
 
-        // 3. MALİYET ANALİZİ PANELİ
-        function fiyatFormunuDoldur() {
-            document.getElementById('fiyat-harc').value = FIYATLAR.harc;
-            document.getElementById('fiyat-pigment').value = FIYATLAR.pigment;
-            document.getElementById('fiyat-akiskan').value = FIYATLAR.akiskan;
+        // SİPARİŞ & ÜRETİM
+        function addOrder() {
+            const cust = document.getElementById('order-cust').value;
+            const color = document.getElementById('order-color').value;
+            const qty = parseInt(document.getElementById('order-qty').value);
+            const price = parseFloat(document.getElementById('order-price').value);
+            const date = document.getElementById('order-date').value;
+
+            if(!cust || !qty) return;
+
+            orders.push({ id: Date.now(), cust, color, qty, remaining: qty, price, date });
+            saveAndRefresh();
+            toggleModal('order-modal');
         }
 
-        function fiyatlariKaydet() {
-            FIYATLAR.harc = parseFloat(document.getElementById('fiyat-harc').value) || 0;
-            FIYATLAR.pigment = parseFloat(document.getElementById('fiyat-pigment').value) || 0;
-            FIYATLAR.akiskan = parseFloat(document.getElementById('fiyat-akiskan').value) || 0;
-
-            localStorage.setItem('saksi_fiyatlar', JSON.stringify(FIYATLAR));
-            alert("Birim hammadde kg fiyatları başarıyla güncellendi!");
+        function renderOrders() {
+            const container = document.getElementById('mobile-order-list');
+            container.innerHTML = '<h3 class="text-xs font-bold text-slate-500 uppercase px-1">Aktif Siparişler</h3>';
+            orders.forEach(o => {
+                const progress = ((o.qty - o.remaining) / o.qty) * 100;
+                container.innerHTML += `
+                    <div class="mobile-card p-4 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 h-1 bg-amber-500" style="width: ${progress}%"></div>
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-bold">${o.cust}</p>
+                                <p class="text-xs text-slate-400 capitalize">${o.color} - ${o.qty} Adet</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs font-bold ${o.remaining === 0 ? 'text-emerald-500' : 'text-amber-500'}">${o.remaining} KALAN</p>
+                                <button onclick="deleteOrder(${o.id})" class="text-slate-600 text-xs mt-2"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
         }
 
-        function maliyetHesapla() {
-            const renk = document.getElementById('maliyet-renk').value;
-            const adet = parseInt(document.getElementById('maliyet-adet').value) || 0;
+        function registerProduction() {
+            const color = document.getElementById('prod-color').value;
+            let qty = parseInt(document.getElementById('prod-qty').value);
+            if(!qty) return;
 
-            if(adet <= 0) return alert("Lütfen adet girin.");
+            orders.filter(o => o.color === color && o.remaining > 0)
+                  .sort((a,b) => new Date(a.date) - new Date(b.date))
+                  .forEach(o => {
+                      if(qty <= 0) return;
+                      const take = Math.min(o.remaining, qty);
+                      o.remaining -= take;
+                      qty -= take;
+                  });
 
-            const maliyetler = tekilMaliyetHesapla(renk, adet);
-
-            document.getElementById('maliyet-sonuc-adet').innerText = adet.toLocaleString('tr-TR');
-            document.getElementById('maliyet-toplam-tutar').innerText = maliyetler.toplam.toFixed(2) + " TL";
-            document.getElementById('m-harc-tl').innerText = `${maliyetler.harc.toFixed(2)} TL (${((RECETELER[renk].harc * adet)/1000).toFixed(1)} kg)`;
-            document.getElementById('m-pigment-tl').innerText = `${maliyetler.pigment.toFixed(2)} TL (${((RECETELER[renk].pigment * adet)/1000).toFixed(3)} kg)`;
-            document.getElementById('m-akiskan-tl').innerText = `${maliyetler.akiskan.toFixed(2)} TL (${((RECETELER[renk].akiskan * adet)/1000).toFixed(1)} kg)`;
-
-            document.getElementById('maliyet-sonuc-alani').classList.remove('hidden');
+            saveAndRefresh();
+            document.getElementById('prod-qty').value = '';
+            alert("Üretim işlendi.");
         }
 
-        // Ortak Yardımcı Fonksiyon: Renk ve Adet verilince hammadde maliyetini döner
-        function tekilMaliyetHesapla(renk, adet) {
-            const r = RECETELER[renk];
-            const harcMaliyet = ((r.harc * adet) / 1000) * FIYATLAR.harc;
-            const pigmentMaliyet = ((r.pigment * adet) / 1000) * FIYATLAR.pigment;
-            const akiskanMaliyet = ((r.akiskan * adet) / 1000) * FIYATLAR.akiskan;
-            return {
-                harc: harcMaliyet,
-                pigment: pigmentMaliyet,
-                akiskan: akiskanMaliyet,
-                toplam: harcMaliyet + pigmentMaliyet + akiskanMaliyet
-            };
+        // FİNANS
+        function renderFinances() {
+            let rev = 0; let cost = 0;
+            orders.forEach(o => {
+                const r = recipes[o.color];
+                rev += (o.qty * o.price);
+                cost += (((r.harc * o.qty)/1000)*prices.harc) + (((r.pigment * o.qty)/1000)*prices.pigment);
+            });
+            document.getElementById('fin-rev').innerText = rev.toLocaleString() + " TL";
+            document.getElementById('fin-cost').innerText = cost.toLocaleString() + " TL";
+            document.getElementById('fin-prof').innerText = (rev - cost).toLocaleString() + " TL";
         }
 
-        // 4. MÜŞTERİ SİPARİŞLERİ PANELİ
-        function siparisEkle(e) {
-            e.preventDefault();
-            const musteri = document.getElementById('siparis-musteri').value;
-            const renk = document.getElementById('siparis-renk').value;
-            const adet = parseInt(document.getElementById('siparis-adet').value) || 0;
-            const birimFiyat = parseFloat(document.getElementById('siparis-birim-fiyat').value) || 0;
-            const termin = document.getElementById('siparis-termin').value;
-
-            const yeniSiparis = {
-                id: Date.now(),
-                musteri,
-                renk,
-                toplamAdet: adet,
-                kalanAdet: adet,
-                birimFiyat,
-                termin
-            };
-
-            SIPARISLER.push(yeniSiparis);
-            localStorage.setItem('saksi_siparisler', JSON.stringify(SIPARISLER));
-            document.getElementById('siparis-formu').reset();
-            tablolariGuncelle();
+        function savePrices() {
+            prices.harc = parseFloat(document.getElementById('price-harc').value);
+            prices.pigment = parseFloat(document.getElementById('price-pigment').value);
+            prices.flow = parseFloat(document.getElementById('price-flow').value);
+            localStorage.setItem('m_prices', JSON.stringify(prices));
+            renderFinances();
+            alert("Fiyatlar güncellendi.");
         }
 
-        function siparisSil(id) {
-            if(confirm("Bu siparişi silmek istediğinize emin misiniz?")) {
-                SIPARISLER = SIPARISLER.filter(s => s.id !== id);
-                localStorage.setItem('saksi_siparisler', JSON.stringify(SIPARISLER));
-                tablolariGuncelle();
+        // YARDIMCILAR
+        function saveAndRefresh() {
+            localStorage.setItem('m_orders', JSON.stringify(orders));
+            renderOrders();
+            renderFinances();
+        }
+
+        function deleteOrder(id) {
+            if(confirm('Silinsin mi?')) {
+                orders = orders.filter(o => o.id !== id);
+                saveAndRefresh();
             }
         }
 
-        // 5. GÜNLÜK ÜRETİM TAKİP PANELİ
-        function uretimEkle(e) {
-            e.preventDefault();
-            const tarih = document.getElementById('uretim-tarih').value;
-            const renk = document.getElementById('uretim-renk').value;
-            let uretilenAdet = parseInt(document.getElementById('uretim-adet').value) || 0;
-
-            if(uretilenAdet <= 0) return alert("Geçerli bir adet giriniz.");
-
-            // Ana Algoritma: İlgili renkteki Kalan Adeti olan EN ESKİ terminli siparişi bul ve düşür
-            // Siparişleri termin tarihine göre sıralıyoruz (FIFO mantığı)
-            let eslesenSiparisler = SIPARISLER.filter(s => s.renk === renk && s.kalanAdet > 0)
-                                              .sort((a,b) => new Date(a.termin) - new Date(b.termin));
-
-            let dagitilacakAdet = uretilenAdet;
-
-            eslesenSiparisler.forEach(siparis => {
-                if(dagitilacakAdet <= 0) return;
-
-                if(siparis.kalanAdet >= dagitilacakAdet) {
-                    siparis.kalanAdet -= dagitilacakAdet;
-                    dagitilacakAdet = 0;
-                } else {
-                    dagitilacakAdet -= siparis.kalanAdet;
-                    siparis.kalanAdet = 0;
-                }
-            });
-
-            // Log kaydı oluştur
-            URETIMLER.unshift({
-                tarih,
-                renk,
-                adet: uretilenAdet
-            });
-
-            localStorage.setItem('saksi_siparisler', JSON.stringify(SIPARISLER));
-            localStorage.setItem('saksi_uretimler', JSON.stringify(URETIMLER));
-            
-            document.getElementById('uretim-adet').value = '';
-            alert("Üretim kaydı işlendi ve kalan sipariş havuzundan düşüldü!");
-            tablolariGuncelle();
+        function populateSelects() {
+            const opts = Object.keys(recipes).map(r => `<option value="${r}">${r.toUpperCase()}</option>`).join('');
+            ['calc-color', 'order-color', 'prod-color'].forEach(id => document.getElementById(id).innerHTML = opts);
         }
 
-        // TÜM TABLOLARI VE HESAPLAMALARI TEKRAR ÇİZEN DESTEKÇİ FONKSİYON
-        function tablolariGuncelle() {
-            // A. Sipariş Tablosu Güncelleme
-            const siparisBody = document.getElementById('siparis-tablo-body');
-            siparisBody.innerHTML = '';
-            SIPARISLER.forEach(s => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition-all text-slate-700";
-                tr.innerHTML = `
-                    <td class="p-3 font-medium">${s.musteri}</td>
-                    <td class="p-3 capitalize"><span class="inline-block w-2.5 h-2.5 rounded-full mr-1.5 bg-${s.renk === 'siyah'?'slate-800':s.renk === 'krem'?'amber-100':'orange-500'}"></span>${s.renk}</td>
-                    <td class="p-3 font-semibold">${s.toplamAdet.toLocaleString()} adet</td>
-                    <td class="p-3"><span class="px-2 py-1 rounded-sm text-xs font-bold ${s.kalanAdet === 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${s.kalanAdet.toLocaleString()} kalan</span></td>
-                    <td class="p-3 text-slate-500">${s.termin}</td>
-                    <td class="p-3 text-right"><button onclick="siparisSil(${s.id})" class="text-red-500 hover:text-red-700 cursor-pointer"><i class="fa-solid fa-trash"></i></button></td>
-                `;
-                siparisBody.appendChild(tr);
-            });
-
-            // B. Üretim Log Tablosu Güncelleme
-            const uretimBody = document.getElementById('uretim-tablo-body');
-            uretimBody.innerHTML = '';
-            URETIMLER.slice(0, 15).forEach(u => { // Son 15 kaydı gösterelim
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 text-slate-600";
-                tr.innerHTML = `
-                    <td class="p-3">${u.tarih}</td>
-                    <td class="p-3 capitalize font-medium">${u.renk}</td>
-                    <td class="p-3 font-semibold text-blue-600">+ ${u.adet.toLocaleString()} adet</td>
-                `;
-                uretimBody.appendChild(tr);
-            });
-
-            // C. KÂR VE MALİYET PANELİ HESAPLAMALARI
-            let toplamCiro = 0;
-            let toplamHammaddeMaliyeti = 0;
-
-            const karBody = document.getElementById('kar-tablo-body');
-            karBody.innerHTML = '';
-
-            SIPARISLER.forEach(s => {
-                const maliyetleri = tekilMaliyetHesapla(s.renk, s.toplamAdet);
-                const ciro = s.toplamAdet * s.birimFiyat;
-                const netKar = ciro - maliyetleri.toplam;
-                const karYuzdesi = ciro > 0 ? (netKar / ciro) * 100 : 0;
-
-                toplamCiro += ciro;
-                toplamHammaddeMaliyeti += maliyetleri.toplam;
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 text-slate-700";
-                tr.innerHTML = `
-                    <td class="p-3 font-medium">${s.musteri}</td>
-                    <td class="p-3 text-xs"><span class="font-semibold block">${s.toplamAdet} Adet</span><span class="text-slate-400 capitalize">${s.renk}</span></td>
-                    <td class="p-3 text-red-600 font-semibold">${maliyetleri.toplam.toFixed(2)} TL</td>
-                    <td class="p-3 text-slate-900 font-semibold">${ciro.toFixed(2)} TL</td>
-                    <td class="p-3"><span class="text-xs font-bold text-emerald-600">${karYuzdesi.toFixed(0)}% Marj</span> <span class="block text-slate-400 text-[11px]">+${netKar.toFixed(0)} TL</span></td>
-                `;
-                karBody.appendChild(tr);
-            });
-
-            document.getElementById('kar-toplam-ciro').innerText = toplamCiro.toLocaleString('tr-TR', {minimumFractionDigits: 2}) + " TL";
-            document.getElementById('kar-toplam-maliyet').innerText = toplamHammaddeMaliyeti.toLocaleString('tr-TR', {minimumFractionDigits: 2}) + " TL";
-            document.getElementById('kar-net-kar').innerText = (toplamCiro - toplamHammaddeMaliyeti).toLocaleString('tr-TR', {minimumFractionDigits: 2}) + " TL";
+        function toggleModal(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle('hidden');
         }
     </script>
 </body>
